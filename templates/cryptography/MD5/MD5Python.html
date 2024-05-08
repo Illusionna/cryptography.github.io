@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#157878">
+        <meta name="description" content="Jarvis Local Help">
+        <meta name="keywords" content="A local network helper">
+        <meta name="revisit-after" content="3 days">
+        <meta name="robots" content="index, follow, noarchive">
+
+        <title>MD5 Python</title>
+
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/modern-normalize-min.css">
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/fonts-min.css">
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/min.css">
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/custom.css">
+    </head>
+
+    <body>
+        <section class="main-content">
+            <div id="home"><br>
+<pre><code>
+'''
+# System --> Windows & Python3.8.0
+# File ----> md5.py
+# Author --> Illusionna
+# Create --> 2024/04/29 17:55:49
+'''
+# -*- Encoding: UTF-8 -*-
+
+
+import os
+import math
+import platform
+
+def cls() -> None:
+    os.system('')
+    try:
+        os.system(
+            {'Windows': 'cls', 'Linux': 'clear'}[platform.system()]
+        )
+    except:
+        print('\033[H\033[J', end='')
+cls()
+
+def MD5(input:bytes) -> str:
+    """
+    计算 md5 哈希散列值.
+
+    输入: 字节流.
+
+    输出: 32 位长度的十六进制字符串.
+    """
+    # -------------------------------------------------------------------------
+    # 零比特填充.
+    omega = list(map(lambda x: x, input))
+    N = len(omega)
+    K = (N - 56) // 64 + 1
+    M = 64 * K + 55 - N
+    omega.append(128)   # 往列表添加 10000000 比特流对应的整数 128.
+    omega.extend([0 for __ in range(0, M, 1)])      # 建议使用列表推导式写法.
+    # -------------------------------------------------------------------------
+    # 有效信息比特流长度填充, 填充的数据与十进制 255 做 & 运算, 强制截断.
+    omega.extend([(((N * 8) >> (8 * i)) & 0xff) for i in range(0, 8, 1)])
+    # -------------------------------------------------------------------------
+    # 初始化全局幻数.
+    A = 0x67452301; B = 0xefcdab89; C = 0x98badcfe; D = 0x10325476
+    # -------------------------------------------------------------------------
+    # 定义辅助函数.
+    F = lambda X, Y, Z:     (X & Y) | ((~X) & Z)
+    G = lambda X, Y, Z:     (X & Z) | (Y & (~Z))
+    H = lambda X, Y, Z:     X ^ Y ^ Z
+    I = lambda X, Y, Z:     Y ^ (X | (~Z))
+    L = lambda X, s:        ((X << s) | (X >> (32 - s))) & 0xffffffff
+    T = lambda x:           int(abs(math.sin(x)) * (1 << 32))
+    # -------------------------------------------------------------------------
+    # 定义数学书法字体 H 函数和 32 比特流拼接函数.
+    mathcalH = lambda q, w, e, r: (q << 0) | (w << 8) | (e << 16) | (r << 24)
+    X = lambda k: mathcalH(omega[k], omega[k+1], omega[k+2], omega[k+3])    # 连续 4 字节.
+    # -------------------------------------------------------------------------
+    # 定义迭代结束输出后, 对换十六进制成为字符串函数.
+    # swap = lambda x: (x << 24) & 0xff000000 | (x << 8) & 0x00ff0000 | (x >> 8) & 0x0000ff00 | (x >> 24) & 0x000000ff
+    # -------------------------------------------------------------------------
+    swap = lambda x: (x >> 24) & 0xff | ((x >> 16) & 0xff) << 8 | ((x >> 8) & 0xff) << 16 | (x & 0xff) << 24
+    # -------------------------------------------------------------------------
+    # 设定循环左移偏量.
+    S = 4 * [7, 12, 17, 22] + 4 * [5, 9, 14, 20] + 4 * [4, 11, 16, 23] + 4 * [6, 10, 15, 21]
+    # -------------------------------------------------------------------------
+    # 加密迭代.
+    for i in range(0, K+1, 1):
+        AA = A; BB = B; CC = C; DD = D
+        for j in range(0, 64, 1):
+            aa = DD; bb = AA; cc = BB; dd = CC
+            a = AA; b = BB; c = CC; d = DD
+            if 0 <= j <= 15:
+                k = i * 64 + j * 4
+                tmp: int = (a + (F(b, c, d) & 0xffffffff) + X(k) + T(j+1)) & 0xffffffff
+            elif 16 <= j <= 31:
+                k = i * 64 + (((5 * j) + 1) % 16) * 4
+                tmp: int = (a + (G(b, c, d) & 0xffffffff) + X(k) + T(j+1)) & 0xffffffff
+            elif 32 <= j <= 47:
+                k = i * 64 + (((3 * j) + 5) % 16) * 4
+                tmp: int = (a + (H(b, c, d) & 0xffffffff) + X(k) + T(j+1)) & 0xffffffff
+            else:
+                k = i * 64 + ((7 * j) % 16) * 4
+                tmp: int = (a + (I(b, c, d) & 0xffffffff) + X(k) + T(j+1)) & 0xffffffff
+            bb = b + L(tmp, S[j])
+            AA = aa; BB = bb; CC = cc; DD = dd
+        A = (A + AA) & 0xffffffff; B = (B + BB) & 0xffffffff
+        C = (C + CC) & 0xffffffff; D = (D + DD) & 0xffffffff
+    digest = (swap(A) << 96) | (swap(B) << 64) | (swap(C) << 32) | swap(D)
+    md5 = hex(digest)[2:].rjust(32, '0')
+    return md5
+
+
+if __name__ == '__main__':
+    import hashlib
+    INPUT = b'Ark'
+    lib = hashlib.md5(INPUT).hexdigest()
+    cus = MD5(INPUT)
+    print(f"hashlib: \033[33m{lib}\033[0m")
+    print(f"custom:  \033[32m{cus}\033[0m")
+</code></pre>
+            </div>
+        </section>
+    </body>
+</html>

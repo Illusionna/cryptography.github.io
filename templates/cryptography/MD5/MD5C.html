@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#157878">
+        <meta name="description" content="Jarvis Local Help">
+        <meta name="keywords" content="A local network helper">
+        <meta name="revisit-after" content="3 days">
+        <meta name="robots" content="index, follow, noarchive">
+
+        <title>MD5 C</title>
+
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/modern-normalize-min.css">
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/fonts-min.css">
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/min.css">
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/custom.css">
+    </head>
+
+    <body>
+        <section class="main-content">
+            <div id="home"><br>
+<pre><code>/* 编译:	gcc md5.c -o md5.exe */
+
+# include &lt;math.h&gt;
+# include &lt;stdio.h&gt;
+# include &lt;string.h&gt;
+# include &lt;malloc.h&gt;
+
+# define cls()					printf("\033[H\033[J")
+# define F(X, Y, Z)             (X & Y) | (~X & Z)
+# define G(X, Y, Z)             (X & Z) | (Y & ~Z)
+# define H(X, Y, Z)             X ^ Y ^ Z
+# define I(X, Y, Z)             Y ^ (X | ~Z)
+# define L(X, s)                ((X << s) | (X >> (32 - s))) & 0xffffffff
+# define T(x)                   (unsigned int)(fabs(sin(x)) * 0x100000000)
+# define MathcalH(q, w, e, r)   (q << 0) | (w << 8) | (e << 16) | (r << 24)
+# define Swap(x)                (x >> 24) & 0xff | ((x >> 16) & 0xff) << 8 | ((x >> 8) & 0xff) << 16 | (x & 0xff) << 24
+
+unsigned int A = 0x67452301, B = 0xefcdab89, C = 0x98badcfe, D = 0x10325476;
+char S[64] = {
+    7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+    5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+    4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+    6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
+};	// s 元素的范围在 [4, 23], 用 char.
+
+int main() {
+    cls();
+    char INPUT[] = "Ark";
+    int N = sizeof(INPUT) - 1;		// C 语言数值结尾还有一个 '\0' 表述 null 空地址, 所以减一.
+    int K;
+    if (N < 56) {
+        K = 0;
+    } else {
+        K = (N - 56) / 64 + 1;
+    }
+    char M = 64 * K + 55 - N;		// M 范围在 [0, 63], 用 char.
+    // ---------------------------------------------------------------
+    /* 字节流转化十进制数组. */
+    // omega 元素范围在 [0, 255], char 类型可能会因为编译器不同而取了 -128~127, 所以保守用 short.
+    short *omega;
+    // 申请动态数组, 如果 N 太大, 也就是输入的字符串太长, 可能会申请失败.
+    omega = (short *)malloc((N + 1 + M + 8) * sizeof(short));
+    for (int i = 0; INPUT[i] != '\0'; ++i) {
+        if (INPUT[i] < 0) {
+            omega[i] = INPUT[i] + 256;
+        } else {
+            omega[i] = INPUT[i];
+        }
+    }
+    // ---------------------------------------------------------------
+    /* 零比特填充. */
+    omega[N] = 128;
+    for (int i = 0; i < M; ++i)  omega[N+1+i] = 0;
+    // ---------------------------------------------------------------
+    /* 有效信息存储填充. */
+    int tmp = N << 3;
+    for (int i = 0; i < 8; ++i) {
+        omega[N+1+M+i] = tmp & 0xff;
+        tmp = tmp >> 8;
+    }
+    // ---------------------------------------------------------------
+    /* 加密迭代. */
+    for (int i = 0; i < K+1; ++i) {
+        int k;		// k 的取值和 omega 数组长度相关, 所以同 N 的 int 型.
+        unsigned int tmp;		// tmp 临时值的范围要小于 0xffffffff, 所以 unsigned int 型.
+        unsigned int Xk;		// MathcalH 函数计算的最终值.
+        unsigned int AA = A, BB = B, CC = C, DD = D;
+        for (int j = 0; j < 64; ++j) {
+            unsigned int aa = DD, bb = AA, cc = BB, dd = CC;
+            unsigned int a = AA, b = BB, c = CC, d = DD;
+            if ((0 <= j) && (j <= 15)) {
+                k = i * 64 + j * 4;
+                Xk = MathcalH(omega[k], omega[k+1], omega[k+2], omega[k+3]);
+                tmp = (a + (F(b, c, d) & 0xffffffff) + Xk + T(j+1)) & 0xffffffff;
+            } else if ((16 <= j) && (j <= 31)) {
+                k = i * 64 + (((5 * j) + 1) % 16) * 4;
+                Xk = MathcalH(omega[k], omega[k+1], omega[k+2], omega[k+3]);
+                tmp = (a + (G(b, c, d) & 0xffffffff) + Xk + T(j+1)) & 0xffffffff;
+            } else if ((32 <= j) && (j <= 47)) {
+                k = i * 64 + (((3 * j) + 5) % 16) * 4;
+                Xk = MathcalH(omega[k], omega[k+1], omega[k+2], omega[k+3]);
+                tmp = (a + (H(b, c, d) & 0xffffffff) + Xk + T(j+1)) & 0xffffffff;
+            } else {
+                k = i * 64 + ((7 * j) % 16) * 4;
+                Xk = MathcalH(omega[k], omega[k+1], omega[k+2], omega[k+3]);
+                tmp = (a + (I(b, c, d) & 0xffffffff) + Xk + T(j+1)) & 0xffffffff;
+            }
+            bb = b + L(tmp, S[j]);
+            AA = aa; BB = bb; CC = cc; DD = dd;
+        }
+        A = (A + AA) & 0xffffffff; B = (B + BB) & 0xffffffff;
+        C = (C + CC) & 0xffffffff; D = (D + DD) & 0xffffffff;
+    }
+    free(omega);
+    // 合并四个迭代完成的幻数, 打印 MD5 哈希散列值.
+    char md5[32+1];		// 数组最后还有一个 null 元素结束符.
+    sprintf(md5, "%x%x%x%x", Swap(A), Swap(B), Swap(C), Swap(D));
+    printf("'Ark' --> MD5 --> %s", md5);
+    return 0;
+}</code></pre>
+            </div>
+        </section>
+    </body>
+</html>
