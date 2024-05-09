@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#157878">
+        <meta name="description" content="Jarvis Local Help">
+        <meta name="keywords" content="A local network helper">
+        <meta name="revisit-after" content="3 days">
+        <meta name="robots" content="index, follow, noarchive">
+
+        <title>PowerShell Python</title>
+
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/modern-normalize-min.css">
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/fonts-min.css">
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/min.css">
+        <link rel="stylesheet" type="text/css" href="../../../assets/css/custom.css">
+    </head>
+
+    <body>
+        <section class="main-content">
+            <div id="home"><br>
+<pre><code>
+import os
+import time
+import platform
+import subprocess
+
+def cls() -> None:
+    os.system('')
+    try:
+        os.system(
+            {'Windows': 'cls', 'Linux': 'clear'}[platform.system()]
+        )
+    except:
+        print('\033[H\033[J', end='')
+cls()
+
+def PowerShell() -> None:
+    cmd = f'powershell -Command Get-FileHash -Path {__file__} -Algorithm md5'
+    startTime = time.time()
+    process = subprocess.Popen(cmd, shell=True)
+    process.wait()
+    endTime = time.time()
+    elapsedTime = endTime - startTime
+    print(f"PowerShell Cost: {elapsedTime:.3f} s")
+
+
+if __name__ == '__main__':
+    PowerShell()
+</code></pre>
+            </div>
+        </section>
+    </body>
+</html>
