@@ -65,7 +65,7 @@ a:hover {
 	text-align:center;
 	background:#5c258d;
 	background:-webkit-linear-gradient(to left,#5C258D,#4389A2);
-	background:linear-gradient(to right, #3ab5b0 0%, #3d99be 31%, #56317a 100%);
+	background: linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.15) 100%), radial-gradient(at top center, rgba(255,255,255,0.40) 0%, rgba(0,0,0,0.40) 120%) #989898; background-blend-mode: multiply,multiply;
 }
 @media screen and (min-width:64em) {
 	.page-header {
